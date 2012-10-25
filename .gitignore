@@ -1,0 +1,6 @@
+# General
+.DS_Store
+*.pyc
+.coverage
+.egg-info
+.idea
