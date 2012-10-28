@@ -11,8 +11,8 @@ from google.appengine.ext import ndb
 #  @property
 #  def agoTime(self):
 #    return agoTime(self.time)
-class SensorMessage(ndb.Model):
-    msgType = ndb.StringProperty(repeated=True)
+class SensorEvent(ndb.Model):
+    msgType = ndb.StringProperty()
     time = ndb.DateTimeProperty()
 
 class Stats(ndb.Model):
