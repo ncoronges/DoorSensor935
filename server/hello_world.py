@@ -4,13 +4,22 @@ import models
 import logging
 import json
 import datetime
+import time
+import date_util
 
 from base_handler import BaseHandler
+from google.appengine.api import mail
 
 class HomeHandler(BaseHandler):
   def get(self):
+
+    events = models.SensorEvent.query(models.SensorEvent.msgType=='door_opened').order(-models.SensorEvent.time).fetch(1)
+    date_to_format = events[0].time
+    timeString = date_util.convert_utc_to_local(date_to_format)
+
     self.template_out('templates/home.html', template_values={
-      'hello_world': 'Door Sensor 935'
+      'hello_world': 'Door Sensor 935',
+      'door_last_opened': timeString
     })
 
 class RobotsTextHandler(BaseHandler):
@@ -32,13 +41,17 @@ class ServiceHandler(BaseHandler):
       if msgType == 'alive':
         stats = models.Stats.query().fetch(1)
         logging.info(stats)
+        stat=None
         if (len(stats)==0):
-          stat = models.Stats(lastAlive=datetime.datetime.now())
-          stat.put()
+          stat = models.Stats()
         else:
           stat = stats[0]
-          stat.lastAlive = datetime.datetime.now()
-          stat.put()
+        stat.lastAlive=datetime.datetime.now()
+        stat.put()
+
+      elif msgType == 'door_opened_alert':
+        self.addRegularSensorEvent(msgType)
+        self.sendDoorOpenedAlertMessage()
 
       else:
         self.addRegularSensorEvent(msgType)
@@ -49,8 +62,23 @@ class ServiceHandler(BaseHandler):
       logging.error(e)
       self.sendResponse(False, "error occured")
 
+  
 
+  def sendDoorOpenedAlertMessage(self):
+    events = models.SensorEvent.query(models.SensorEvent.msgType=='door_opened').order(-models.SensorEvent.time).fetch(1)
+    date_to_format = events[0].time
+    timeString = date_util.convert_utc_to_local(date_to_format)
     
+    message = mail.EmailMessage(sender="935DoorSensor <notifier@doorsensor935.appspotmail.com>",
+                            subject="Door is Opened!")
+    message.to = "Nick <ncoronges@gmail.com>"
+    message.body = """
+    Dear Residents:
+    The door has been opened since %s
+    Shut the door!
+    """ %timeString
+
+    message.send()
 
   def addRegularSensorEvent(self, p_msgType):
     sensorEvent = models.SensorEvent(msgType=p_msgType, time=datetime.datetime.now())
