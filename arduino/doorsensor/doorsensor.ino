@@ -11,8 +11,8 @@ String MSG_DOOR_OPENED = "door_opened";
 String MSG_DOOR_CLOSED = "door_closed";
 String MSG_DOOR_OPEN_ALERT = "door_opened_alert";
 unsigned long lastAlive = 0;
-unsigned long ALIVE_MSG_INTERVAL = 30000; // 5 minutes 300000
-unsigned long DOOR_OPEN_ALERT_INTERVAL = 30000; // 5 minutes 300000
+unsigned long ALIVE_MSG_INTERVAL = 300000; // 5 minutes 300000
+unsigned long DOOR_OPEN_ALERT_INTERVAL = 600000; // 5 minutes 300000
 unsigned long lastDoorOpened = 0;
 
 Client client(host, port);
