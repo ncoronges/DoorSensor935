@@ -1,13 +1,14 @@
 
 #include <WiFly.h>
-#include "Credentials.h"
+#include "Config.h"
 #define LED 12
 #define REED 7
-
 
 String MSG_STARTED = "started";
 String MSG_ALIVE = "alive";
 String MSG_WIFI_ERROR = "wifi_error";
+String MSG_DOOR_OPENED = "door_opened";
+String MSG_DOOR_CLOSED = "door_closed";
 unsigned long lastAlive;
 
 Client client(host, port);
@@ -18,7 +19,7 @@ void setup() {
   Serial.begin(9600);
   
   pinMode(LED, OUTPUT);      
-  //digitalWrite(LED, LOW);
+  digitalWrite(LED, LOW);
   
   pinMode(REED, INPUT);
   
@@ -26,11 +27,10 @@ void setup() {
   Serial.println(LED);
   Serial.println(REED);
   
-  //WiFly.begin();
+  WiFly.begin();
   
   Serial.println("wifly begun....");
   
-  /*
   if (!WiFly.join(ssid, passphrase)) {
     Serial.println("Association failed.");
     sendMessage(MSG_WIFI_ERROR, NULL);
@@ -42,7 +42,7 @@ void setup() {
   }  
 
   sendMessage(MSG_STARTED, NULL);
-  */
+ 
   lastAlive = millis();
 }
 
@@ -65,8 +65,10 @@ void loop() {
     Serial.println(doorOpen);
     
     if(doorOpen == LOW) {
+       sendMessage(MSG_DOOR_CLOSED, NULL); 
        digitalWrite(LED, HIGH);
     } else {
+       sendMessage(MSG_DOOR_OPENED, NULL);
        digitalWrite(LED, LOW);
     }
     currentState = doorOpen;
@@ -75,7 +77,7 @@ void loop() {
   
   
   /* not sure if i need to read this or not */
-  /*
+
   if (client.available()) {
     char c = client.read();
     Serial.print(c);
@@ -92,7 +94,7 @@ void loop() {
     for(;;)
       ;
   }
-  */
+  
   delay(500);
 }
 
