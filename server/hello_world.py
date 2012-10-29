@@ -53,7 +53,7 @@ class ServiceHandler(BaseHandler):
     
 
   def addRegularSensorEvent(self, p_msgType):
-    sensorEvent = models.sensorEvent(msgType=p_msgType, time=datetime.datetime.now())
+    sensorEvent = models.SensorEvent(msgType=p_msgType, time=datetime.datetime.now())
     sensorEvent.put()
 
   def sendResponse(self, success=True, msg=None):
