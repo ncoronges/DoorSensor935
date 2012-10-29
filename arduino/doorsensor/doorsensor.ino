@@ -9,7 +9,11 @@ String MSG_ALIVE = "alive";
 String MSG_WIFI_ERROR = "wifi_error";
 String MSG_DOOR_OPENED = "door_opened";
 String MSG_DOOR_CLOSED = "door_closed";
-unsigned long lastAlive;
+String MSG_DOOR_OPEN_ALERT = "door_opened_alert";
+unsigned long lastAlive = 0;
+unsigned long ALIVE_MSG_INTERVAL = 30000; // 5 minutes 300000
+unsigned long DOOR_OPEN_ALERT_INTERVAL = 30000; // 5 minutes 300000
+unsigned long lastDoorOpened = 0;
 
 Client client(host, port);
 
@@ -43,7 +47,6 @@ void setup() {
 
   sendMessage(MSG_STARTED, NULL);
  
-  lastAlive = millis();
 }
 
 int count = 0;
@@ -51,12 +54,13 @@ int currentState = 0;
 
 void loop() {
 
-  Serial.print("current state: ");
-  Serial.println(currentState);
+  long now = millis();
+  //Serial.print("current state: ");
+  //Serial.println(currentState);
   
   int doorOpen = digitalRead(REED);
-  Serial.print("door open: ");
-  Serial.println(doorOpen);
+  //Serial.print("door open: ");
+  //Serial.println(doorOpen);
   
   if(doorOpen != currentState) {
     Serial.print("change state from ");
@@ -67,17 +71,17 @@ void loop() {
     if(doorOpen == LOW) {
        sendMessage(MSG_DOOR_CLOSED, NULL); 
        digitalWrite(LED, HIGH);
+       lastDoorOpened = 0;
     } else {
        sendMessage(MSG_DOOR_OPENED, NULL);
        digitalWrite(LED, LOW);
+       lastDoorOpened = now;
     }
     currentState = doorOpen;
   }
   
   
-  
-  /* not sure if i need to read this or not */
-
+  /*
   if (client.available()) {
     char c = client.read();
     Serial.print(c);
@@ -93,9 +97,26 @@ void loop() {
     client.stop();
     for(;;)
       ;
+  }*/
+  
+  // send alive every 5 minutes
+  if (now >= lastAlive + ALIVE_MSG_INTERVAL) {
+    sendMessage(MSG_ALIVE, NULL); 
+    lastAlive = now;
+  } else if (now < lastAlive) {
+    // after 50 days arduino resets millis() to zero
+    lastAlive = now;  
   }
   
-  delay(500);
+  // send door opened alert 
+  if (lastDoorOpened != 0) {
+    if (now > lastDoorOpened + DOOR_OPEN_ALERT_INTERVAL) {
+      sendMessage(MSG_DOOR_OPEN_ALERT, NULL); 
+      lastDoorOpened = now;  
+    }
+  }
+  
+  delay(10);
 }
 
 void sendMessage(String msgType, String msg) {
@@ -119,6 +140,19 @@ void sendMessage(String msgType, String msg) {
   } else {
     Serial.println( "error. not connected.." ); 
   }
-  
+  delay(500);
+  // Read http client stuff
+  while (client.available()) {
+      // TODO verify success (HTTP/1.1 200 OK)
+      Serial.write(client.read());  // display the result
+  }
+  Serial.println();
+  delay(10);
+  if (client.connected()) {
+      Serial.println("disconnecting.");
+      client.stop();
+      Serial.println("disconnected.");
+  }
+  delay(500);
 }
 
