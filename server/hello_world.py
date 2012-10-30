@@ -17,9 +17,14 @@ class HomeHandler(BaseHandler):
     date_to_format = events[0].time
     timeString = date_util.convert_utc_to_local(date_to_format)
 
+    stats = models.Stats.query().fetch(1)
+    stat = stats[0]
+    currentState = stat.currentState
+
     self.template_out('templates/home.html', template_values={
       'hello_world': 'Door Sensor 935',
-      'door_last_opened': timeString
+      'door_last_opened': timeString,
+      'current_state': currentState
     })
 
 class RobotsTextHandler(BaseHandler):
@@ -53,6 +58,14 @@ class ServiceHandler(BaseHandler):
         self.addRegularSensorEvent(msgType)
         self.sendDoorOpenedAlertMessage()
 
+      elif msgType == 'door_opened':
+        self.addRegularSensorEvent(msgType)
+        self.updateState(msgType)
+
+      elif msgType == 'door_closed':
+        self.addRegularSensorEvent(msgType)
+        self.updateState(msgType)
+
       else:
         self.addRegularSensorEvent(msgType)
       
@@ -62,7 +75,16 @@ class ServiceHandler(BaseHandler):
       logging.error(e)
       self.sendResponse(False, "error occured")
 
-  
+  def updateState(self, msgType):
+      stats = models.Stats.query().fetch(1)
+      stat=None
+      if (len(stats)==0):
+        stat = models.Stats()
+      else:
+        stat = stats[0]
+      stat.currentState = msgType;
+      stat.put()
+
 
   def sendDoorOpenedAlertMessage(self):
     events = models.SensorEvent.query(models.SensorEvent.msgType=='door_opened').order(-models.SensorEvent.time).fetch(1)

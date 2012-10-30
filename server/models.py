@@ -17,3 +17,4 @@ class SensorEvent(ndb.Model):
 
 class Stats(ndb.Model):
     lastAlive = ndb.DateTimeProperty()
+    currentState = ndb.StringProperty()

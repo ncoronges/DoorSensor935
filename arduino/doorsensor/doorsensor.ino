@@ -26,6 +26,7 @@ void setup() {
   digitalWrite(LED, LOW);
   
   pinMode(REED, INPUT);
+  digitalWrite(REED, HIGH); // turn on pull up
   
   Serial.println("Starting....");
   Serial.println(LED);
