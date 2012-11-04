@@ -7,5 +7,7 @@ a Reed switch and a magnet to detect door state, and a Wifly shield to access ho
 Came out of a problem I've had in my building where people leave the outside door open, which in my neighborhood, 
 is an unsafe situation. The app emails our residents when the door is open for some period of time. 
 
+UPDATE: battery-powering this thing not going to work. Oops. Researching other approaches. 
+
 ![](http://github.com/ncoronges/DoorSensor935/raw/master/assets/doorsensor.jpg) 
 
