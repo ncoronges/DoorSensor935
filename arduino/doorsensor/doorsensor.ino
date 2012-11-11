@@ -101,6 +101,7 @@ void loop() {
   }*/
   
   // send alive every 5 minutes
+  /*
   if (now >= lastAlive + ALIVE_MSG_INTERVAL) {
     sendMessage(MSG_ALIVE, NULL); 
     lastAlive = now;
@@ -108,6 +109,7 @@ void loop() {
     // after 50 days arduino resets millis() to zero
     lastAlive = now;  
   }
+  */
   
   // send door opened alert 
   if (lastDoorOpened != 0) {

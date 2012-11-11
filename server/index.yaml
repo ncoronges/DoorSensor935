@@ -1,1 +1,7 @@
+indexes:
 
+- kind: SensorEvent
+  properties:
+  - name: msgType
+  - name: time
+    direction: desc
