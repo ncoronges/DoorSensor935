@@ -12,19 +12,30 @@ from google.appengine.api import mail
 
 class HomeHandler(BaseHandler):
   def get(self):
-
-    events = models.SensorEvent.query(models.SensorEvent.msgType=='door_opened').order(-models.SensorEvent.time).fetch(1)
-    date_to_format = events[0].time
-    timeString = date_util.convert_utc_to_local(date_to_format)
-
-    stats = models.Stats.query().fetch(1)
-    stat = stats[0]
-    currentState = stat.currentState
+    timeString = ""
+    currentState = ""
+    lastEvent = ""
+    events = models.SensorEvent.query().order(-models.SensorEvent.time).fetch(1)
+    if (len(events)>0):
+      date_to_format = events[0].time
+      timeString = date_util.convert_utc_to_local(date_to_format)
+      lastEvent = events[0].msgType
+    
+    # events = models.SensorEvent.query(models.SensorEvent.msgType=='door_opened' or models.SensorEvent.msgType=='door_opened_alert').order(-models.SensorEvent.time).fetch(1)
+    # if (len(events)>0):
+    #   date_to_format = events[0].time
+    #   timeString = date_util.convert_utc_to_local(date_to_format)
+    
+    # stats = models.Stats.query().fetch(1)
+    # if(len(stats)>0):
+    #   stat = stats[0]
+    #   currentState = stat.currentState
 
     self.template_out('templates/home.html', template_values={
       'hello_world': 'Door Sensor 935',
-      'door_last_opened': timeString,
-      'current_state': currentState
+      'event_time': timeString,
+      'current_state': currentState,
+      'last_event': lastEvent
     })
 
 class RobotsTextHandler(BaseHandler):
@@ -56,6 +67,7 @@ class ServiceHandler(BaseHandler):
 
       elif msgType == 'door_opened_alert':
         self.addRegularSensorEvent(msgType)
+        self.updateState(msgType)
         self.sendDoorOpenedAlertMessage()
 
       elif msgType == 'door_opened':

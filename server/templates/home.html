@@ -4,8 +4,9 @@
 <div style="font-size: 24px;">
   {{ hello_world }} {% if current_state == 'door_closed' %}<i class="icon-ok"></i>{% else %} <i class="icon-warning-sign"></i> {% endif %} <br/>
 </div> <br/>
-
-  Current state: {{current_state}} <br/>
-  Door last opened: {{door_last_opened}} <br/>
+  Last event: {{last_event}} <br/>
+  Event time: {{event_time}}
+  <!--Current state: {{current_state}} <br/>
+  Door last opened: {{door_last_opened}} <br/>-->
 
 {% endblock %}
