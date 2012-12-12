@@ -2,11 +2,16 @@
 {% block title %}{% endblock %}
 {% block body %}
 <div style="font-size: 24px;">
-  {{ hello_world }} {% if current_state == 'door_closed' %}<i class="icon-ok"></i>{% else %} <i class="icon-warning-sign"></i> {% endif %} <br/>
+  935 Door Sensor
+</div> <br/>
+<div style="font-size: 48px;">
+  {% if current_state == 'OPEN' %}<i style="color:#ee3333" class="icon-warning-sign"></i>{% else %}{% if last_event == 'door_opened_alert' %}<i style="color:#eeee33" class="icon-ok-circle"></i>{% else %}<i style="color:#33ee33" class="icon-ok"></i>{% endif %}{% endif %} 
 </div> <br/>
   Last event: {{last_event}} <br/>
-  Event time: {{event_time}}
-  <!--Current state: {{current_state}} <br/>
-  Door last opened: {{door_last_opened}} <br/>-->
+  Event time: {{event_time}} <br/>
+  Current state: {{current_state}} <br/>
+  <!-- Door last opened: {{door_last_opened}} <br/>-->
+  <br/>
+  Remote addr: {{REMOTE_ADDR}}
 
 {% endblock %}

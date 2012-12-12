@@ -22,7 +22,8 @@ class BaseHandler(webapp2.RequestHandler):
       'PAGE_URL_FULL': self.request.path_url,
       'QUERY_STRING': self.request.query_string,
       'URL': self.request.url,
-      'PATH': self.request.path
+      'PATH': self.request.path,
+      'REMOTE_ADDR': self.request.remote_addr
     }
 
     all_template_values.update(template_values)

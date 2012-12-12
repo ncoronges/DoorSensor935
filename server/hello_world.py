@@ -6,20 +6,24 @@ import json
 import datetime
 import time
 import date_util
-
 from base_handler import BaseHandler
 from google.appengine.api import mail
 
 class HomeHandler(BaseHandler):
   def get(self):
     timeString = ""
-    currentState = ""
+    currentState = "CLOSED (inferred)"
     lastEvent = ""
+    currentTime = datetime.datetime.now()
     events = models.SensorEvent.query().order(-models.SensorEvent.time).fetch(1)
     if (len(events)>0):
       date_to_format = events[0].time
       timeString = date_util.convert_utc_to_local(date_to_format)
       lastEvent = events[0].msgType
+      if (lastEvent == "door_opened_alert"):
+        elapsed = currentTime - events[0].time
+        if (elapsed <= datetime.timedelta(minutes=5)):
+          currentState = "OPEN"
     
     # events = models.SensorEvent.query(models.SensorEvent.msgType=='door_opened' or models.SensorEvent.msgType=='door_opened_alert').order(-models.SensorEvent.time).fetch(1)
     # if (len(events)>0):
@@ -97,15 +101,16 @@ class ServiceHandler(BaseHandler):
       stat.currentState = msgType;
       stat.put()
 
-
   def sendDoorOpenedAlertMessage(self):
     events = models.SensorEvent.query(models.SensorEvent.msgType=='door_opened').order(-models.SensorEvent.time).fetch(1)
+    # TODO: need to find the first door_opened event 
+
     date_to_format = events[0].time
     timeString = date_util.convert_utc_to_local(date_to_format)
     
     message = mail.EmailMessage(sender="935DoorSensor <notifier@doorsensor935.appspotmail.com>",
                             subject="Door is Opened!")
-    message.to = "Nick <ncoronges@gmail.com>"
+    message.to = "935pacificalerts@googlegroups.com"
     message.body = """
     Dear Residents:
     The door has been opened since %s

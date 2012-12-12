@@ -13,6 +13,7 @@ String MSG_DOOR_OPEN_ALERT = "door_opened_alert";
 String MSG_DOOR_OPEN = "door_opened";
 unsigned long lastAlive = 0;
 unsigned long DOOR_OPEN_ALERT_INTERVAL = 60000; // 5 minutes 300000
+unsigned long DOOR_OPEN_RESEND_INTERVAL = 300000;
 unsigned long lastSentAlert = 0;
 unsigned int numTimesAlertSent = 0;
 
@@ -47,7 +48,7 @@ void setup() {
 void loop() {
 
   long now = millis();
-  if (now >= DOOR_OPEN_ALERT_INTERVAL && now >= lastSentAlert+(DOOR_OPEN_ALERT_INTERVAL*numTimesAlertSent)) {
+  if (now >= DOOR_OPEN_ALERT_INTERVAL && now >= lastSentAlert+(DOOR_OPEN_RESEND_INTERVAL*numTimesAlertSent)) {
     lastSentAlert = now;
     numTimesAlertSent++;
     sendMessage(MSG_DOOR_OPEN_ALERT, NULL);
