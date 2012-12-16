@@ -15,6 +15,11 @@ class SensorEvent(ndb.Model):
     msgType = ndb.StringProperty()
     time = ndb.DateTimeProperty()
 
+class Alert(ndb.Model):
+	startTime = ndb.DateTimeProperty()
+	endTime = ndb.DateTimeProperty()
+	duration = ndb.IntegerProperty()
+
 class Stats(ndb.Model):
     lastAlive = ndb.DateTimeProperty()
     currentState = ndb.StringProperty()

@@ -15,7 +15,7 @@ class HomeHandler(BaseHandler):
     currentState = "CLOSED (inferred)"
     lastEvent = ""
     currentTime = datetime.datetime.now()
-    events = models.SensorEvent.query().order(-models.SensorEvent.time).fetch(1)
+    events = models.SensorEvent.query().order(-models.SensorEvent.time).fetch(limit=1)
     if (len(events)>0):
       date_to_format = events[0].time
       timeString = date_util.convert_utc_to_local(date_to_format)
@@ -25,22 +25,27 @@ class HomeHandler(BaseHandler):
         if (elapsed <= datetime.timedelta(minutes=5)):
           currentState = "OPEN"
     
-    # events = models.SensorEvent.query(models.SensorEvent.msgType=='door_opened' or models.SensorEvent.msgType=='door_opened_alert').order(-models.SensorEvent.time).fetch(1)
-    # if (len(events)>0):
-    #   date_to_format = events[0].time
-    #   timeString = date_util.convert_utc_to_local(date_to_format)
     
-    # stats = models.Stats.query().fetch(1)
-    # if(len(stats)>0):
-    #   stat = stats[0]
-    #   currentState = stat.currentState
+    graph_events = []
+    
 
     self.template_out('templates/home.html', template_values={
       'hello_world': 'Door Sensor 935',
       'event_time': timeString,
       'current_state': currentState,
-      'last_event': lastEvent
+      'last_event': lastEvent,
+      'graph_events': graph_events
     })
+
+def unix_time(dt):
+  epoch = datetime.datetime.utcfromtimestamp(0)
+  delta = dt - epoch
+  return delta.total_seconds()
+
+def unix_time_millis(dt):
+  return unix_time(dt) * 1000.0
+
+
 
 class RobotsTextHandler(BaseHandler):
   def get(self):
@@ -70,11 +75,20 @@ class ServiceHandler(BaseHandler):
         stat.put()
 
       elif msgType == 'door_opened_alert':
+        events = models.SensorEvent.query().order(-models.SensorEvent.time).fetch(limit=1)
+        if len(events)>0:
+          if (events[0].msgType == 'door_opened'):
+            self.addNewAlert(events[0].time)
         self.addRegularSensorEvent(msgType)
         self.updateState(msgType)
         self.sendDoorOpenedAlertMessage()
 
       elif msgType == 'door_opened':
+        events = models.SensorEvent.query().order(-models.SensorEvent.time).fetch(limit=1)
+        if len(events)>0:
+          if (events[0].msgType == 'door_opened_alert'):
+            self.updateCurrentAlert(events[0].time)
+
         self.addRegularSensorEvent(msgType)
         self.updateState(msgType)
 
@@ -94,7 +108,7 @@ class ServiceHandler(BaseHandler):
   def updateState(self, msgType):
       stats = models.Stats.query().fetch(1)
       stat=None
-      if (len(stats)==0):
+      if len(stats)==0:
         stat = models.Stats()
       else:
         stat = stats[0]
@@ -118,6 +132,18 @@ class ServiceHandler(BaseHandler):
     """ %timeString
 
     message.send()
+
+  def addNewAlert(self, start_date):
+    alert = models.Alert(startTime=start_date)
+    alert.put()
+
+  def updateCurrentAlert(self, end_date):
+    alerts = models.Alert.query().order(-models.Alert.startTime).fetch(limit=1)
+    if len(alerts)>0:
+      alerts[0].endTime = end_date
+      difference = alerts[0].endTime - alerts[0].startTime
+      alerts[0].duration = difference.seconds 
+      alerts[0].put()
 
   def addRegularSensorEvent(self, p_msgType):
     sensorEvent = models.SensorEvent(msgType=p_msgType, time=datetime.datetime.now())

@@ -14,4 +14,26 @@
   <br/>
   Remote addr: {{REMOTE_ADDR}}
 
+<div id="graph">
+</div>
+
+<script type="text/javascript">
+$(function() {
+	var graph_events = [];
+	{% for item in graph_events %}
+    	graph_events.push( { y:'{{item.startTime}}', a:'{{item.duration}}' } ); 
+	{% endfor %}
+
+	// annual data
+	Morris.Line({
+	  element: 'graph',
+	  data: graph_events,
+	  xkey: 'y',
+	  xLabels: ["hours"],
+	  ykeys: ['a'],
+	  labels: ['Events'],
+	  dateFormat: function (x) { return new Date(x).toString(); }
+	});
+});
+</script>
 {% endblock %}

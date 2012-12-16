@@ -3,3 +3,18 @@ body {
 	padding-top: 60px;
 	padding-bottom: 40px;
 }
+
+.graph {
+    color: color or number
+    data: rawdata
+    label: string
+    lines: specific lines options
+    bars: specific bars options
+    points: specific points options
+    xaxis: number
+    yaxis: number
+    clickable: boolean
+    hoverable: boolean
+    shadowSize: number
+    highlightColor: color or number
+}
